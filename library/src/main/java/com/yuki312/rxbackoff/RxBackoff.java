@@ -65,16 +65,29 @@ public class RxBackoff implements Function<Observable<Throwable>, ObservableSour
     });
   }
 
+  /**
+   * Filters errors emitted by an ObservableSource by only emitting those that satisfy a specified
+   * predicate.
+   *
+   * @param predicate a function that evaluates each error emitted by the source ObservableSource,
+   * returning {@code true} if it passes the filter
+   */
   public RxBackoff filter(@NonNull Predicate<Throwable> predicate) {
     this.filter = predicate;
     return this;
   }
 
+  /**
+   * Set callback function called every time before retry processing
+   */
   public RxBackoff doOnRetry(@NonNull BiConsumer<Throwable, Integer> onRetry) {
     this.onRetry = onRetry;
     return this;
   }
 
+  /**
+   * Set callback function called when giving up retry
+   */
   public RxBackoff doOnGiveUp(@NonNull Consumer<Throwable> onGiveUp) {
     this.onGiveUp = onGiveUp;
     return this;
