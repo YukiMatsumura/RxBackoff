@@ -3,12 +3,15 @@ package com.yuki312.rxbackoff.example
 import com.yuki312.rxbackoff.RxBackoff
 import io.reactivex.Observable
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.junit.runners.JUnit4
 import java.io.IOException
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import kotlin.math.pow
 
-class ExampleUnitTest {
+@RunWith(JUnit4.class)
+class RxBackoffTest {
   @Test
   fun fixedInterval() {
     var i = 0
