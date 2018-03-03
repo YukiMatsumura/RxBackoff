@@ -45,6 +45,8 @@ class ExampleUnitTest {
     }
         .retryWhen(
             RxBackoff(5, { retry ->
+              val e = retry.coerceAtMost(5)
+
               2F.pow(retry - 1).toLong().times(1000L).coerceAtMost(5000L)
             })
                 .doOnRetry { _, cnt -> println("retry $cnt") }
