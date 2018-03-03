@@ -3,6 +3,7 @@ package com.yuki312.rxbackoff.example
 import com.yuki312.rxbackoff.RxBackoff
 import io.reactivex.Observable
 import org.junit.Test
+import java.io.IOException
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import kotlin.math.pow
@@ -53,6 +54,30 @@ class ExampleUnitTest {
           awaitTerminalEvent()
           assertValueCount(1)
           assertNoErrors()
+        }
+  }
+
+  @Test
+  fun filter() {
+    var i = 0
+    Observable.fromCallable {
+      ++i
+      println("call ${time()} $i")
+      when (i) {
+        in 1..2 -> throw IOException("io error $i")
+        3 -> throw RuntimeException("runtime error $i")
+        else -> i
+      }
+    }
+        .retryWhen(
+            RxBackoff(3, 1000L)
+                .filter { it is IOException }
+                .doOnRetry { _, cnt -> println("retry $cnt") })
+        .test()
+        .run {
+          awaitTerminalEvent()
+          assertNoValues()
+          assertError { it is RuntimeException }
         }
   }
 
