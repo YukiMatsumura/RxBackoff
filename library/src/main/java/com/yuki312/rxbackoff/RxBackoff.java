@@ -34,6 +34,12 @@ public class RxBackoff implements Function<Observable<Throwable>, ObservableSour
     }
   };
 
+  /**
+   * Construct RxBackoff with fixed interval backoff.
+   *
+   * @param maxRetry Maximum number of times to retry
+   * @param delayMs Wait time until next retry
+   */
   public RxBackoff(int maxRetry, final long delayMs) {
     this(maxRetry, new Function<Integer, Long>() {
       @Override public Long apply(Integer integer) throws Exception {
@@ -42,9 +48,17 @@ public class RxBackoff implements Function<Observable<Throwable>, ObservableSour
     });
   }
 
-  public RxBackoff(int maxRetry, Function<Integer, Long> delayFunction) {
+  /**
+   * Construct RxBackoff with backoff algorithm<br />
+   * e.g.
+   * <code> 2F.pow(retry - 1).toLong().times(1000L).coerceAtMost(5000L) </code>
+   *
+   * @param maxRetry Maximum number of times to retry
+   * @param backoffAlgorithm Algorithm for calculating the wait time until the next retry
+   */
+  public RxBackoff(int maxRetry, Function<Integer, Long> backoffAlgorithm) {
     this.maxRetry = maxRetry;
-    this.delayFunction = delayFunction;
+    this.delayFunction = backoffAlgorithm;
   }
 
   @Override public ObservableSource apply(Observable<Throwable> attempts) throws Exception {
