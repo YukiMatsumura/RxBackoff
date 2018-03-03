@@ -5,10 +5,11 @@ import io.reactivex.Observable
 import org.junit.Test
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import kotlin.math.pow
 
 class ExampleUnitTest {
   @Test
-  fun test() {
+  fun fixedInterval() {
     var i = 0
     Observable.fromCallable {
       ++i
@@ -19,7 +20,32 @@ class ExampleUnitTest {
       }
     }
         .retryWhen(
-            RxBackoff(3, 2000)
+            RxBackoff(3, 2000L)
+                .doOnRetry { _, cnt -> println("retry $cnt") }
+                .doOnGiveUp { println("give up") })
+        .test()
+        .run {
+          awaitTerminalEvent()
+          assertValueCount(1)
+          assertNoErrors()
+        }
+  }
+
+  @Test
+  fun exponential() {
+    var i = 0
+    Observable.fromCallable {
+      ++i
+      println("call ${time()} $i")
+      when (i) {
+        in 1..4 -> throw Exception("error $i")
+        else -> i
+      }
+    }
+        .retryWhen(
+            RxBackoff(5, { retry ->
+              2F.pow(retry - 1).toLong().times(1000L).coerceAtMost(5000L)
+            })
                 .doOnRetry { _, cnt -> println("retry $cnt") }
                 .doOnGiveUp { println("give up") })
         .test()
