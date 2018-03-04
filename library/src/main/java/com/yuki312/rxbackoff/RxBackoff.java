@@ -3,18 +3,20 @@ package com.yuki312.rxbackoff;
 import android.support.annotation.NonNull;
 import io.reactivex.Observable;
 import io.reactivex.ObservableSource;
+import io.reactivex.Scheduler;
 import io.reactivex.functions.BiConsumer;
 import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 import io.reactivex.functions.Predicate;
+import io.reactivex.schedulers.Schedulers;
 import java.util.concurrent.TimeUnit;
+
+import static com.yuki312.rxbackoff.Backoff.ABORT;
 
 public class RxBackoff implements Function<Observable<Throwable>, ObservableSource<?>> {
 
-  private final int maxRetry;
-  private final Function<Integer, Long> delayFunction;
-
-  private int retryCount = 0;
+  @NonNull private final Backoff backoff;
+  @NonNull private final Scheduler intervalScheduler;
 
   private Predicate<Throwable> filter = new Predicate<Throwable>() {
     @Override public boolean test(Throwable throwable) throws Exception {
@@ -28,37 +30,32 @@ public class RxBackoff implements Function<Observable<Throwable>, ObservableSour
     }
   };
 
-  private Consumer<Throwable> onGiveUp = new Consumer<Throwable>() {
+  private Consumer<Throwable> onAbort = new Consumer<Throwable>() {
     @Override public void accept(Throwable throwable) throws Exception {
       // no-op
     }
   };
 
   /**
-   * Construct RxBackoff with fixed interval backoff.
+   * Construct RxBackoff.
    *
-   * @param maxRetry Maximum number of times to retry
-   * @param delayMs Wait time until next retry
+   * @param backoff Backoff object with algorithm specified. You can build the back-off object
+   * using the {@link Backoff.Builder}.
    */
-  public RxBackoff(int maxRetry, final long delayMs) {
-    this(maxRetry, new Function<Integer, Long>() {
-      @Override public Long apply(Integer integer) throws Exception {
-        return delayMs;
-      }
-    });
+  public RxBackoff(@NonNull Backoff backoff) {
+    this(backoff, Schedulers.computation());
   }
 
   /**
-   * Construct RxBackoff with backoff algorithm<br />
-   * e.g.
-   * <code> 2F.pow(retry - 1).toLong().times(1000L).coerceAtMost(5000L) </code>
+   * Construct RxBackoff.
    *
-   * @param maxRetry Maximum number of times to retry
-   * @param backoffAlgorithm Algorithm for calculating the wait time until the next retry
+   * @param backoff Backoff object with algorithm specified. You can build the back-off object
+   * using the {@link Backoff.Builder}.
+   * @param intervalScheduler Scheduler used in backoff interval
    */
-  public RxBackoff(int maxRetry, Function<Integer, Long> backoffAlgorithm) {
-    this.maxRetry = maxRetry;
-    this.delayFunction = backoffAlgorithm;
+  public RxBackoff(@NonNull Backoff backoff, @NonNull Scheduler intervalScheduler) {
+    this.backoff = backoff;
+    this.intervalScheduler = intervalScheduler;
   }
 
   @Override public ObservableSource apply(Observable<Throwable> attempts) throws Exception {
@@ -68,11 +65,12 @@ public class RxBackoff implements Function<Observable<Throwable>, ObservableSour
           return Observable.error(throwable);
         }
 
-        if (++retryCount <= maxRetry) {
-          onRetry.accept(throwable, retryCount);
-          return Observable.timer(delayFunction.apply(retryCount), TimeUnit.MILLISECONDS);
+        long interval = backoff.interval();
+        if (interval != ABORT) {
+          onRetry.accept(throwable, backoff.getRetryCount());
+          return Observable.timer(interval, TimeUnit.MILLISECONDS, intervalScheduler);
         } else {
-          onGiveUp.accept(throwable);
+          onAbort.accept(throwable);
           return Observable.error(throwable);
         }
       }
@@ -100,10 +98,10 @@ public class RxBackoff implements Function<Observable<Throwable>, ObservableSour
   }
 
   /**
-   * Set callback function called when giving up retry
+   * Set callback function called when abort retry
    */
-  public RxBackoff doOnGiveUp(@NonNull Consumer<Throwable> onGiveUp) {
-    this.onGiveUp = onGiveUp;
+  public RxBackoff doOnAbort(@NonNull Consumer<Throwable> onAbort) {
+    this.onAbort = onAbort;
     return this;
   }
 }

@@ -26,7 +26,7 @@ For example...
 
 ## Backoff time algorithm
 
-The backoff time can be choose fixed intervals or according to the truncated binary exponential backoff algorithm.
+The backoff time can be choose fixed intervals or according to the truncated exponential backoff algorithm.
 
 ### Fixed interval backoff
 
@@ -60,7 +60,7 @@ retrofit.webapi()
 |----------|-------------|
 | filter | Filters errors emitted by an ObservableSource |
 | doOnRetry | Callback function called every time before retry processing |
-| doOnGiveUp | Callback function called when giving up retry |
+| doOnAbort | Callback function called when giving up retry |
 
 
 ```java
@@ -71,7 +71,7 @@ retrofit.webapi()
       })
           .filter { it is HttpException } // You can filtered 500 or 504 here
           .doOnRetry { e, cnt -> println("Retry $cnt times, error=$e") }
-          .doOnGiveUp { e -> println("give up, error=$e") })
+          .doOnAbort { e -> println("Abort, error=$e") })
 ```
 
 ## License
