@@ -43,12 +43,12 @@ dependencies {
   testCompile "org.mockito:mockito-core:2.15.0"
 }
 
-// ./gradlew clean :denbun:build :denbun:bintrayUpload -PbintrayUser=[bintrayUser] -PbintrayKey=[bintrayKey] -PdryRun=false
+// ./gradlew clean :library:build :library:bintrayUpload -PbintrayUser=[bintrayUser] -PbintrayKey=[bintrayKey] -PdryRun=false
 publish {
   userOrg = USER_ORG
   groupId = GROUP_ID
   artifactId = ARTIFACT_ID
   publishVersion = VERSION_NAME
-  desc = "Managed android app messages, and to be more user friendly."
-  website = "https://github.com/YukiMatsumura/denbun"
+  desc = "Backoff algorithm with RxJava2"
+  website = "https://github.com/YukiMatsumura/RxBackoff"
 }
