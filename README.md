@@ -85,8 +85,8 @@ public BinaryExponentialAlgorithm(long interval, long maxInterval, double range)
 
 ### Random interval backoff
 
-![low = lowInterval * lowMultiplier ^{RetryCount - 1}](https://latex.codecogs.com/svg.latex?\large&space;low&space;=&space;lowInterval&space;*&space;lowMultiplier&space;^{RetryCount&space;-&space;1})
-![high = highInterval * highMultiplier ^{RetryCount - 1}](https://latex.codecogs.com/svg.latex?\large&space;high&space;=&space;highInterval&space;*&space;highMultiplier&space;^{RetryCount&space;-&space;1})
+![low = lowInterval * lowMultiplier ^{RetryCount - 1}](https://latex.codecogs.com/svg.latex?\large&space;low&space;=&space;lowInterval&space;*&space;lowMultiplier&space;^{RetryCount&space;-&space;1})  
+![high = highInterval * highMultiplier ^{RetryCount - 1}](https://latex.codecogs.com/svg.latex?\large&space;high&space;=&space;highInterval&space;*&space;highMultiplier&space;^{RetryCount&space;-&space;1})  
 ![interval = Rand(low..high](https://latex.codecogs.com/svg.latex?\large&space;interval&space;=&space;Rand[low..high])
 
 | *hMultiplier = 3.0* | 1st retry   | 2nd retry   | 3rd retry   |
