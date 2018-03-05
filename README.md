@@ -6,13 +6,19 @@ This library is useful when you want a retry operation using **Exponential backo
 > Exponential backoff is an algorithm that uses feedback to multiplicatively decrease the rate of some process, in order to gradually find an acceptable rate.
 In a variety of computer networks, binary exponential backoff or truncated binary exponential backoff refers to an algorithm used to space out repeated retransmissions of the same block of data, often as part of network congestion avoidance.
 
+
 ### Usage
 
+```gradle
+implementation 'com.yuki312:RxBackoff:<latest version>'
+```
+
+[ ![Download](https://api.bintray.com/packages/yuki312/maven/RxBackoff/images/download.svg) ](https://bintray.com/yuki312/maven/RxBackoff/_latestVersion)
 
 `RxBackoff` can be used for error handling using `retryWhen` function.  
 The following code delays the retry process with the Binary Exponential Backoff algorithm.
 
-```
+```java
 // retry -> (wait 0.5s) -> retry -> (wait 1s) -> retry -> (wait 2s) -> ...
 retrofit.webapi()
     .retryWhen(RxBackoff.exponential(5 /* maxRetryCount */))  
