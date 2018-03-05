@@ -79,7 +79,7 @@ public class Backoff {
     private BackoffAlgorithm algorithm = new ExponentialAlgorithm();
 
     /**
-     * Set backoff algorithm<br />
+     * Set backoff algorithm.
      * You can choose from the following algorithms or you can set your own algorithm.
      *
      * <ul>
@@ -88,15 +88,16 @@ public class Backoff {
      * </ul>
      *
      * or e.g.
-     * <code><pre>
+     * <pre><code>
      *   public long interval(int retryCount, long elapsedTime) {
      *     2F.pow(retry - 1).toLong().times(1000L).coerceAtMost(5000L)
      *   }
-     * </pre></code>
+     * </code></pre>
      *
      * When you want to force stop retrying process, return ABORT.
      *
      * @param algorithm Algorithm for calculating the interval time until the next retry
+     * @return Backoff builder
      * @see BackoffAlgorithm
      */
     public Builder setAlgorithm(@NonNull BackoffAlgorithm algorithm) {
@@ -111,6 +112,7 @@ public class Backoff {
      * The count must be greater or equal 0.
      *
      * @param count maximum count of retry
+     * @return Backoff builder
      * @see #DEFAULT_MAX_RETRY_COUNT
      * @see #setUnlimitedRetryCount()
      */
@@ -136,6 +138,7 @@ public class Backoff {
      *
      * @param elapsedTime maximum elapsed time in milliseconds
      * @param unit the units of time that {@code elapsedTime} is expressed in
+     * @return Backoff builder
      * @see #DEFAULT_MAX_ELAPSED_TIME
      * @see #setUnlimitedElapsedTime()
      */

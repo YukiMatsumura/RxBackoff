@@ -104,6 +104,7 @@ public class RxBackoff implements Function<Observable<Throwable>, ObservableSour
    *
    * @param predicate a function that evaluates each error emitted by the source ObservableSource,
    * returning {@code true} if it passes the filter
+   * @return RxBackoff instance
    */
   public RxBackoff filter(@NonNull Predicate<Throwable> predicate) {
     this.filter = predicate;
@@ -112,6 +113,9 @@ public class RxBackoff implements Function<Observable<Throwable>, ObservableSour
 
   /**
    * Set callback function called every time before retry processing
+   *
+   * @param onRetry action to be executed at each retry
+   * @return RxBackoff instance
    */
   public RxBackoff doOnRetry(@NonNull BiConsumer<Throwable, Integer> onRetry) {
     this.onRetry = onRetry;
@@ -120,6 +124,9 @@ public class RxBackoff implements Function<Observable<Throwable>, ObservableSour
 
   /**
    * Set callback function called when abort retry
+   *
+   * @param onAbort action to be executed when abort
+   * @return RxBackoff instance
    */
   public RxBackoff doOnAbort(@NonNull Consumer<Throwable> onAbort) {
     this.onAbort = onAbort;
