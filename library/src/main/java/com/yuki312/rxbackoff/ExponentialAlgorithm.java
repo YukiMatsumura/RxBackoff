@@ -1,11 +1,8 @@
 package com.yuki312.rxbackoff;
 
-import static com.yuki312.rxbackoff.Backoff.DEFAULT_INTERVAL;
-import static com.yuki312.rxbackoff.Backoff.DEFAULT_MAX_INTERVAL;
-import static com.yuki312.rxbackoff.Backoff.DEFAULT_MULTIPLIER;
-import static com.yuki312.rxbackoff.Backoff.DEFAULT_RANGE;
-import static com.yuki312.rxbackoff.Backoff.NO_RANGE;
 import static com.yuki312.rxbackoff.Backoff.TRACE;
+import static com.yuki312.rxbackoff.Backoff.trace;
+import static java.lang.Math.pow;
 
 /**
  * Default exponential backoff interval:
@@ -20,12 +17,37 @@ import static com.yuki312.rxbackoff.Backoff.TRACE;
  * | 3796     | (3036..4555)   |
  * | 5695     | (4556..6834)   |
  * | 8542     | (6833..10250)  |
- * | 12814    | (10251..15376) |
- * | 15000    | (12000..18000) | *Default max interval 15,000ms
- * | 15000    | (12000..18000) |
+ * | 12814    | (10251..15000) |
+ * | 15000    | (12000..15000) | *Default max interval 15,000ms
+ * | 15000    | (12000..15000) |
  * | ...      | ...            |
  */
 public class ExponentialAlgorithm implements BackoffAlgorithm {
+
+  /**
+   * the default interval
+   */
+  public static final long DEFAULT_INTERVAL = 500L;
+
+  /**
+   * the default multiplier (increases the interval by 50%)
+   */
+  public static final double DEFAULT_MULTIPLIER = 1.5;
+
+  /**
+   * the default maximum interval. Truncate time that exceeds 15 seconds.
+   */
+  public static final long DEFAULT_MAX_INTERVAL = 15_000L;
+
+  /**
+   * the default random range. choose randomly within the range of ± 20% of the interval value.
+   */
+  public static final double DEFAULT_RANGE = 0.2;
+
+  /**
+   * No dispersion of intervals.
+   */
+  public static final double NO_RANGE = 0.0;
 
   private final long interval;
   private final double multiplier;
@@ -47,12 +69,12 @@ public class ExponentialAlgorithm implements BackoffAlgorithm {
    */
   public ExponentialAlgorithm(long interval, double multiplier, long maxInterval, double range) {
     if (interval < 1L) {
-      throw new IllegalArgumentException("initialInterval is invalid. Must be greater than 1.");
+      throw new IllegalArgumentException("Interval is invalid. Must be greater than 1.");
     }
 
     if (maxInterval < interval) {
       throw new IllegalArgumentException(
-          "maxInterval is invalid. Must be greater or equal than initialInterval.");
+          "maxInterval is invalid. Must be greater or equal than Interval.");
     }
 
     if (multiplier < 1.0) {
@@ -70,22 +92,18 @@ public class ExponentialAlgorithm implements BackoffAlgorithm {
     this.range = range;
   }
 
-  @Override public long nextInterval(int retryCount, long elapsedTime) {
-    long next = (long) Math.min(interval * Math.pow(multiplier, retryCount - 1), maxInterval);
+  @Override public long interval(int retryCount, long elapsedTime) {
+    long next = (long) Math.min(interval * pow(multiplier, retryCount - 1), maxInterval);
 
     // calculate random range interval
     if (range != NO_RANGE) {
-      long min = (long) (next - (next * range));
-      long max = (long) (next + (next * range));
-      long rnd = min + (int) (Math.random() * ((max - min) + 1));
-      if (TRACE) trace(Math.min(next, maxInterval), min, max);
-      next = Math.min(rnd, maxInterval);
+      long low = (long) Math.max(next - (next * range), 1);
+      long high = (long) Math.min(next + (next * range), maxInterval);
+      long rnd = low + (int) (Math.random() * ((high - low) + 1));
+      if (TRACE) trace(next, low, high);
+      next = rnd;
     }
 
     return next;
-  }
-
-  private void trace(long next, long min, long max) {
-    System.out.println(Math.min(next, maxInterval) + " (" + min + ".." + max + ")");
   }
 }

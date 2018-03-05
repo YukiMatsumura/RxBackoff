@@ -7,31 +7,6 @@ import java.util.concurrent.TimeUnit;
 public class Backoff {
 
   /**
-   * the default interval
-   */
-  public static final long DEFAULT_INTERVAL = 500L;
-
-  /**
-   * the default multiplier (increases the interval by 50%)
-   */
-  public static final double DEFAULT_MULTIPLIER = 1.5;
-
-  /**
-   * the default maximum interval. Truncate time that exceeds 15 seconds.
-   */
-  public static final long DEFAULT_MAX_INTERVAL = 15_000L;
-
-  /**
-   * the default random range. choose randomly within the range of ± 20% of the interval value.
-   */
-  public static final double DEFAULT_RANGE = 0.2;
-
-  /**
-   * No dispersion of intervals.
-   */
-  public static final double NO_RANGE = 0.0;
-
-  /**
    * Give up on retry
    */
   public static final long ABORT = 0;
@@ -63,7 +38,7 @@ public class Backoff {
       return ABORT;
     }
 
-    long next = algorithm.nextInterval(retryCount, elapsedTime);
+    long next = algorithm.interval(retryCount, elapsedTime);
     if (next == ABORT) {
       return ABORT;
     }
@@ -114,7 +89,7 @@ public class Backoff {
      *
      * or e.g.
      * <code><pre>
-     *   public long nextInterval(int retryCount, long elapsedTime) {
+     *   public long interval(int retryCount, long elapsedTime) {
      *     2F.pow(retry - 1).toLong().times(1000L).coerceAtMost(5000L)
      *   }
      * </pre></code>
@@ -134,10 +109,10 @@ public class Backoff {
      * The retry is aborted when either the maximum count or the maximum elapsed time is satisfied.
      *
      * The count must be greater or equal 0.
-     * If no upper limit is provided, specify Integer.MAX_VALUE.
      *
      * @param count maximum count of retry
      * @see #DEFAULT_MAX_RETRY_COUNT
+     * @see #setUnlimitedRetryCount()
      */
     public Builder setMaxRetryCount(@IntRange(from = 0) int count) {
       if (count < 0) {
@@ -148,16 +123,21 @@ public class Backoff {
       return this;
     }
 
+    public Builder setUnlimitedRetryCount() {
+      setMaxRetryCount(Integer.MAX_VALUE);
+      return this;
+    }
+
     /**
      * Set the maximum elapsed time to retry milliseconds time.
      * The retry is aborted when either the maximum count or the maximum elapsed time is satisfied.
      *
      * The elapsed time must be greater or equal 0.
-     * If no upper limit is provided, specify Long.MAX_VALUE.
      *
      * @param elapsedTime maximum elapsed time in milliseconds
      * @param unit the units of time that {@code elapsedTime} is expressed in
      * @see #DEFAULT_MAX_ELAPSED_TIME
+     * @see #setUnlimitedElapsedTime()
      */
     public Builder setMaxElapsedTime(@IntRange(from = 0) long elapsedTime, TimeUnit unit) {
       long t = unit.toMillis(elapsedTime);
@@ -169,8 +149,17 @@ public class Backoff {
       return this;
     }
 
+    public Builder setUnlimitedElapsedTime() {
+      setMaxElapsedTime(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+      return this;
+    }
+
     @NonNull public Backoff build() {
       return new Backoff(algorithm, maxRetryCount, maxElapsedTime);
     }
+  }
+
+  static void trace(long next, long low, long high) {
+    System.out.println(next + " (" + low + ".." + high + ")");
   }
 }

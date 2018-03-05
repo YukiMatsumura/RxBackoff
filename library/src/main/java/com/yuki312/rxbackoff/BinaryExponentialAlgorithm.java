@@ -1,9 +1,5 @@
 package com.yuki312.rxbackoff;
 
-import static com.yuki312.rxbackoff.Backoff.DEFAULT_INTERVAL;
-import static com.yuki312.rxbackoff.Backoff.DEFAULT_MAX_INTERVAL;
-import static com.yuki312.rxbackoff.Backoff.DEFAULT_RANGE;
-
 /**
  * Default binary exponential backoff interval:
  *
@@ -14,8 +10,8 @@ import static com.yuki312.rxbackoff.Backoff.DEFAULT_RANGE;
  * | 2000     | (1600, 2400)   |
  * | 4000     | (3200, 4800)   |
  * | 8000     | (6400, 9600)   |
- * | 15000    | (12000, 18000) | *Default max interval 15,000ms
- * | 15000    | (12000..18000) |
+ * | 15000    | (12000, 15000) | *Default max interval 15,000ms
+ * | 15000    | (12000..15000) |
  * | ...      | ...            |
  */
 public class BinaryExponentialAlgorithm extends ExponentialAlgorithm {
@@ -23,9 +19,9 @@ public class BinaryExponentialAlgorithm extends ExponentialAlgorithm {
   /**
    * Construct Binary exponential algorithm.
    *
-   * @see Backoff#DEFAULT_INTERVAL
-   * @see Backoff#DEFAULT_MAX_INTERVAL
-   * @see Backoff#DEFAULT_RANGE
+   * @see #DEFAULT_INTERVAL
+   * @see #DEFAULT_MAX_INTERVAL
+   * @see #DEFAULT_RANGE
    */
   public BinaryExponentialAlgorithm() {
     super(DEFAULT_INTERVAL, 2.0, DEFAULT_MAX_INTERVAL, DEFAULT_RANGE);
@@ -35,8 +31,8 @@ public class BinaryExponentialAlgorithm extends ExponentialAlgorithm {
    * Construct Binary exponential algorithm.
    *
    * @param interval Wait time milliseconds until next retry
-   * @see Backoff#DEFAULT_MAX_INTERVAL
-   * @see Backoff#DEFAULT_RANGE
+   * @see #DEFAULT_MAX_INTERVAL
+   * @see #DEFAULT_RANGE
    */
   public BinaryExponentialAlgorithm(long interval) {
     super(interval, 2.0, DEFAULT_MAX_INTERVAL, DEFAULT_RANGE);
@@ -47,7 +43,7 @@ public class BinaryExponentialAlgorithm extends ExponentialAlgorithm {
    *
    * @param interval Wait time milliseconds until next retry
    * @param maxInterval the maximum interval. Truncate time that exceeds
-   * @see Backoff#DEFAULT_RANGE
+   * @see #DEFAULT_RANGE
    */
   public BinaryExponentialAlgorithm(long interval, long maxInterval) {
     super(interval, 2.0, maxInterval, DEFAULT_RANGE);

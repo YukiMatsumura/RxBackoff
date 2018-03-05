@@ -14,5 +14,5 @@ public interface BackoffAlgorithm {
    * @return next interval time or ABORT
    * @see Backoff#ABORT
    */
-  @IntRange(from = 0L) long nextInterval(int retryCount, long elapsedTime);
+  @IntRange(from = 0L) long interval(int retryCount, long elapsedTime);
 }

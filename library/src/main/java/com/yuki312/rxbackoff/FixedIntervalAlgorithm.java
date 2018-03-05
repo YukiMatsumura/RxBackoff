@@ -2,8 +2,6 @@ package com.yuki312.rxbackoff;
 
 import java.util.concurrent.TimeUnit;
 
-import static com.yuki312.rxbackoff.Backoff.DEFAULT_INTERVAL;
-
 /**
  * Default fixed backoff interval:
  *
@@ -16,12 +14,17 @@ import static com.yuki312.rxbackoff.Backoff.DEFAULT_INTERVAL;
  */
 public class FixedIntervalAlgorithm implements BackoffAlgorithm {
 
+  /**
+   * the default interval
+   */
+  public static final long DEFAULT_INTERVAL = 500L;
+
   private final long interval; // millisecond
 
   /**
    * Construct fixed interval algorithm.
    *
-   * @see Backoff#DEFAULT_INTERVAL
+   * @see #DEFAULT_INTERVAL
    */
   public FixedIntervalAlgorithm() {
     this.interval = DEFAULT_INTERVAL;
@@ -41,7 +44,7 @@ public class FixedIntervalAlgorithm implements BackoffAlgorithm {
     this.interval = t;
   }
 
-  @Override public long nextInterval(int retryCount, long elapsedTime) {
+  @Override public long interval(int retryCount, long elapsedTime) {
     return interval;
   }
 }
