@@ -23,8 +23,11 @@ The following code delays the retry process with the Binary Exponential Backoff 
 retrofit.webapi()
     .retryWhen(RxBackoff.exponential(2.0 /* Multiplier */ , 5 /* maxRetryCount */))
     .subscribe(...)
+```
 
+The following code is a random interval algorithm(not backoff).
 
+```java
 // retry -> (wait 1~5000ms) -> retry -> (wait 1~5000ms) -> retry ...
 retrofit.webapi()
     .retryWhen(RxBackoff.random(1 /* low */, 5000 /* high */, 5 /* maxRetryCount */))
