@@ -21,7 +21,7 @@ The following code delays the retry process with the Binary Exponential Backoff 
 ```java
 // retry -> (wait 0.5s) -> retry -> (wait 1s) -> retry -> (wait 2s) -> ...
 retrofit.webapi()
-    .retryWhen(RxBackoff.exponential(5 /* maxRetryCount */))  
+    .retryWhen(RxBackoff.exponential(2.0 /* Multiplier */ , 5 /* maxRetryCount */))
     .subscribe(...)
 ```
 

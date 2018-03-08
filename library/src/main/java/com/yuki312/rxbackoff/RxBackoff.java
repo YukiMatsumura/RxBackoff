@@ -36,9 +36,13 @@ public class RxBackoff implements Function<Observable<Throwable>, ObservableSour
     }
   };
 
-  public static RxBackoff exponential(int maxRetryCount) {
+  public static RxBackoff exponential(double multiplier, int maxRetryCount) {
     return new RxBackoff(new Backoff.Builder()
-        .setAlgorithm(new BinaryExponentialAlgorithm())
+        .setAlgorithm(new ExponentialAlgorithm(
+            ExponentialAlgorithm.DEFAULT_INTERVAL,
+            multiplier,
+            ExponentialAlgorithm.DEFAULT_MAX_INTERVAL,
+            ExponentialAlgorithm.DEFAULT_RANGE))
         .setMaxRetryCount(maxRetryCount)
         .build());
   }
