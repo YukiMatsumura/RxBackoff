@@ -1,11 +1,14 @@
+defaults: &defaults
+  working_directory: ~/rxbackoff
+  docker:
+    - image: circleci/android:api-27-alpha
+  environment:
+    JVM_OPTS: -Xmx3200m
+
 version: 2
 jobs:
   build:
-    working_directory: ~/rxbackoff
-    docker:
-      - image: circleci/android:api-27-alpha
-    environment:
-      JVM_OPTS: -Xmx3200m
+    <<: *defaults
     steps:
       - checkout
       - restore_cache:
@@ -34,14 +37,15 @@ jobs:
       - run:
           name: Codecov
           command: bash <(curl -s https://codecov.io/bash)
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .
   deploy:
-    working_directory: ~/rxbackoff
-    docker:
-      - image: circleci/android:api-27-alpha
-    environment:
-      JVM_OPTS: -Xmx3200m
+    <<: *defaults
     steps:
-      - checkout
+      - attach_workspace:
+          at: .
       - run:
           name: Deploy
           command: ./gradlew :library:bintrayUpload -PbintrayUser=$BINTRAY_USER -PbintrayKey=$BINTRAY_KEY -PdryRun=false
