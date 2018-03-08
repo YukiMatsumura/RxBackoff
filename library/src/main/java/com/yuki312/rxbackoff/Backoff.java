@@ -14,7 +14,7 @@ public class Backoff {
   /**
    * Debug trace
    */
-  static final boolean TRACE = true;
+  static final boolean TRACE = BuildConfig.DEBUG;
 
   private final BackoffAlgorithm algorithm;
   private final int maxRetryCount;
