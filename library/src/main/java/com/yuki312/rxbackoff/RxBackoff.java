@@ -54,6 +54,18 @@ public class RxBackoff implements Function<Observable<Throwable>, ObservableSour
         .build());
   }
 
+  public static RxBackoff random(long lowInterval, long highInterval, int maxRetryCount) {
+    return new RxBackoff(new Backoff.Builder()
+        .setAlgorithm(new RandomIntervalAlgorithm(
+            lowInterval,
+            highInterval,
+            1.0,
+            1.0,
+            highInterval))
+        .setMaxRetryCount(maxRetryCount)
+        .build());
+  }
+
   public static RxBackoff of(BackoffAlgorithm algorithm, int maxRetryCount) {
     return new RxBackoff(new Backoff.Builder()
         .setAlgorithm(algorithm)

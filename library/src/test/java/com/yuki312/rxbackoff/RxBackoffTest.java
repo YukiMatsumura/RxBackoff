@@ -16,7 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class RxBackoffTest {
 
   @Test
-  public void test() {
+  public void fixed() {
     final AtomicInteger count = new AtomicInteger(0);
     final TestScheduler scheduler = new TestScheduler();
     final RxBackoff backoff = new RxBackoff(
@@ -40,5 +40,36 @@ public class RxBackoffTest {
     observer.awaitTerminalEvent(1000L, TimeUnit.MILLISECONDS);
     observer.assertError(Exception.class);
     assertThat(count.get()).isEqualTo(6); // try(1 time) + retry(5 times)
+  }
+
+  @Test
+  public void random() {
+    final AtomicInteger count = new AtomicInteger(0);
+    final TestScheduler scheduler = new TestScheduler();
+    final RxBackoff backoff = new RxBackoff(new Backoff.Builder()
+        .setAlgorithm(new RandomIntervalAlgorithm(
+            1,
+            5000,
+            1.0,
+            1.0,
+            5000))
+        .setMaxRetryCount(3)
+        .build(),
+        scheduler);
+    final TestObserver observer = Observable
+        .fromCallable(new Callable<Integer>() {
+          @Override public Integer call() throws Exception {
+            throw new Exception("error " + count.incrementAndGet());
+          }
+        })
+        .retryWhen(backoff)
+        .subscribeOn(scheduler)
+        .test();
+
+    scheduler.advanceTimeTo(15000L, TimeUnit.MILLISECONDS);
+    scheduler.triggerActions();
+    observer.awaitTerminalEvent(1000L, TimeUnit.MILLISECONDS);
+    observer.assertError(Exception.class);
+    assertThat(count.get()).isGreaterThanOrEqualTo(4); // try(1 time) + retry(n times)
   }
 }
