@@ -1,7 +1,8 @@
 
-# RxBackoff  
-  
-This library is useful when you want a retry operation using **Exponential backoff algorithm**.  
+
+# RxBackoff
+
+This library is useful when you want a retry operation using **Exponential backoff algorithm**.
 
 > Exponential backoff is an algorithm that uses feedback to multiplicatively decrease the rate of some process, in order to gradually find an acceptable rate.
 In a variety of computer networks, binary exponential backoff or truncated binary exponential backoff refers to an algorithm used to space out repeated retransmissions of the same block of data, often as part of network congestion avoidance.
@@ -9,13 +10,20 @@ In a variety of computer networks, binary exponential backoff or truncated binar
 
 ### Usage
 
+Library core package: [![Download](https://api.bintray.com/packages/yuki312/maven/backoff-core/images/download.svg)](https://bintray.com/yuki312/maven/backoff-core/_latestVersion)
+
 ```gradle
-implementation 'com.yuki312:RxBackoff:<latest version>'
+implementation 'com.yuki312:backoff-core:<latest version>'
 ```
 
-[ ![Download](https://api.bintray.com/packages/yuki312/maven/RxBackoff/images/download.svg) ](https://bintray.com/yuki312/maven/RxBackoff/_latestVersion)
+If you want to use RxJava2, add the following package: [![Download](https://api.bintray.com/packages/yuki312/maven/backoff-rxjava2/images/download.svg)](https://bintray.com/yuki312/maven/backoff-rxjava2/_latestVersion)
 
-`RxBackoff` can be used for error handling using `retryWhen` function.  
+```gradle
+implementation 'com.yuki312:backoff-rxjava2:<latest version>'
+```
+
+
+`RxBackoff` can be used for error handling using `retryWhen` function.
 The following code delays the retry process with the Binary Exponential Backoff algorithm.
 
 ```java
@@ -48,16 +56,16 @@ RxBackoff(Backoff.Builder()
     .setMaxElapsedTime(3, TimeUnit.MINUTES)
     .setMaxRetryCount(5)
     .build())
-  .filter { it is HttpException }  // You can filtered 500 or 504 here 
-  .doOnRetry { e, cnt ->  println("Retry $cnt times, error=$e")  }  
+  .filter { it is HttpException }  // You can filtered 500 or 504 here
+  .doOnRetry { e, cnt ->  println("Retry $cnt times, error=$e")  }
   .doOnAbort { e ->  println("Abort, error=$e")  })
 ```
 
-## Backoff interval algorithm  
+## Backoff interval algorithm
 
 You can choose to set the Backoff interval to a specific value or a random value from a specific range. For HTTP request retry processing, a random interval is recommended to avoid congestion due to retries.  For local retries, random intervals may not be necessary.
 
-### Exponential backoff  
+### Exponential backoff
 
 ![interval = interval * multiplier ^{RetryCount - 1}](https://latex.codecogs.com/svg.latex?\large&space;interval&space;=&space;interval&space;*&space;multiplier&space;^{RetryCount&space;-&space;1})
 
@@ -100,8 +108,8 @@ public BinaryExponentialAlgorithm(long interval, long maxInterval, double range)
 
 ### Random interval backoff
 
-![low = lowInterval * lowMultiplier ^{RetryCount - 1}](https://latex.codecogs.com/svg.latex?\large&space;low&space;=&space;lowInterval&space;*&space;lowMultiplier&space;^{RetryCount&space;-&space;1})  
-![high = highInterval * highMultiplier ^{RetryCount - 1}](https://latex.codecogs.com/svg.latex?\large&space;high&space;=&space;highInterval&space;*&space;highMultiplier&space;^{RetryCount&space;-&space;1})  
+![low = lowInterval * lowMultiplier ^{RetryCount - 1}](https://latex.codecogs.com/svg.latex?\large&space;low&space;=&space;lowInterval&space;*&space;lowMultiplier&space;^{RetryCount&space;-&space;1})
+![high = highInterval * highMultiplier ^{RetryCount - 1}](https://latex.codecogs.com/svg.latex?\large&space;high&space;=&space;highInterval&space;*&space;highMultiplier&space;^{RetryCount&space;-&space;1})
 ![interval = Rand(low..high](https://latex.codecogs.com/svg.latex?\large&space;interval&space;=&space;Rand[low..high])
 
 | *hMultiplier = 3.0* | 1st retry   | 2nd retry   | 3rd retry   |
@@ -126,12 +134,12 @@ public static final double DEFAULT_HIGH_MULTIPLIER = 3.0;
 // the default maximum interval. Truncate time that exceeds 15 seconds.
 public static final long DEFAULT_MAX_INTERVAL = 15_000L;
 
-public RandomIntervalAlgorithm(long lowInterval, long highInterval, 
-                               double lowMultiplier, double highMultiplier, 
+public RandomIntervalAlgorithm(long lowInterval, long highInterval,
+                               double lowMultiplier, double highMultiplier,
                                long maxInterval)
 ```
 
-### Fixed interval backoff  
+### Fixed interval backoff
 
 ![interval = interval](https://latex.codecogs.com/svg.latex?\large&space;interval&space;=&space;interval)
 
@@ -152,17 +160,17 @@ public FixedIntervalAlgorithm(long interval, TimeUnit unit)
 
 ### Custom interval backoff
 
-You can also use your own backoff algorithm. If `Backoff.ABORT(0)` is returned, backoff processing will be aborted.  
+You can also use your own backoff algorithm. If `Backoff.ABORT(0)` is returned, backoff processing will be aborted.
 
 ```java
-RxBackoff.of({ retry, elapsed ->  
-  2F.pow(retry - 1).toLong().times(1000L).coerceAtMost(5000L)  
+RxBackoff.of({ retry, elapsed ->
+  2F.pow(retry - 1).toLong().times(1000L).coerceAtMost(5000L)
 }, 5)
 ```
 
 ## Truncate interval times
 
-The 'truncated' simply means that after a certain number of increases, the exponentiation stops; i.e. the retransmission timeout reaches a ceiling and thereafter does not increase any further.  
+The 'truncated' simply means that after a certain number of increases, the exponentiation stops; i.e. the retransmission timeout reaches a ceiling and thereafter does not increase any further.
 All built-in algorithms support Truncated.
 
 ```java
@@ -177,7 +185,7 @@ public BinaryExponentialAlgorithm(long interval, long maxInterval)
 
 ## Abort retry
 
-You can abort retry processing when certain conditions are satisfied. RxBackoff measures the number of retry processes and elapsed time. When retry count or elapsed time exceeds the threshold value, the retry process is aborted.  
+You can abort retry processing when certain conditions are satisfied. RxBackoff measures the number of retry processes and elapsed time. When retry count or elapsed time exceeds the threshold value, the retry process is aborted.
 
 ### Maximum retry counts & Maximum elapsed times
 
@@ -189,31 +197,31 @@ public Builder setMaxRetryCount(int count) {...}
 public Builder setMaxElapsedTime(long elapsedTime, TimeUnit unit)
 ```
 
-## Utility function  
+## Utility function
 
 ### RxBackoff
 
-| Function | Description |  
-|----------|-------------|  
-| exponential | Use Binary exponential backoff algorithm | 
+| Function | Description |
+|----------|-------------|
+| exponential | Use Binary exponential backoff algorithm |
 | fixed | Use Fixed interval algorithm |
 | of | Retry specified number of times with specified algorithm  |
-| filter | Filters errors emitted by an ObservableSource |  
-| doOnRetry | Callback function called every time before retry processing |  
-| doOnAbort | Callback function called when giving up retry |  
-  
-  
-```java  
-retrofit.webapi()  
+| filter | Filters errors emitted by an ObservableSource |
+| doOnRetry | Callback function called every time before retry processing |
+| doOnAbort | Callback function called when giving up retry |
+
+
+```java
+retrofit.webapi()
   .retryWhen(
-      RxBackoff.exponential(maxRetryCount = 5))  
-          .filter { it is HttpException } // You can filtered 500 or 504 here  
-          .doOnRetry { e, cnt -> println("Retry $cnt times, error=$e") }  
-          .doOnAbort { e -> println("Abort, error=$e") })  
-```  
+      RxBackoff.exponential(maxRetryCount = 5))
+          .filter { it is HttpException } // You can filtered 500 or 504 here
+          .doOnRetry { e, cnt -> println("Retry $cnt times, error=$e") }
+          .doOnAbort { e -> println("Abort, error=$e") })
+```
 
 
 
-## License  
-  
+## License
+
 Copyright 2017 Matsumura Yuki. Licensed under the Apache License, Version 2.0;
