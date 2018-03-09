@@ -1,0 +1,50 @@
+apply plugin: 'com.android.library'
+apply from: '../jacoco.gradle'
+apply plugin: 'com.novoda.bintray-release'
+
+android {
+  compileSdkVersion COMPILE_SDK_VERSION as int
+
+  defaultConfig {
+    minSdkVersion MIN_SDK_VERSION
+    targetSdkVersion TARGET_SDK_VERSION
+    versionCode RXJAVA2_VERSION_CODE as int
+    versionName RXJAVA2_VERSION_NAME
+
+    testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+  }
+
+  buildTypes {
+    debug {
+      testCoverageEnabled true
+    }
+  }
+
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_1_7
+    targetCompatibility JavaVersion.VERSION_1_7
+  }
+}
+
+dependencies {
+  api project(':core')
+  api 'io.reactivex.rxjava2:rxjava:2.1.10'
+  implementation "com.android.support:support-annotations:${SUPPORT_LIB}"
+
+  testImplementation "junit:junit:${JUNIT}"
+  testImplementation "org.assertj:assertj-core:${ASSERTJ_CORE}"
+  testImplementation "org.mockito:mockito-core:${MOCKITO_CORE}"
+}
+
+// Publish Bintray:
+//   Push git tag "rxjava_vX.Y.Z". And Then CircleCI will publish it to Bintray.
+// or Manually...
+//   ./gradlew clean :rxjava2:build :rxjava2:bintrayUpload -PbintrayUser=[bintrayUser] -PbintrayKey=[bintrayKey] -PdryRun=false
+publish {
+  userOrg = USER_ORG
+  groupId = GROUP_ID
+  artifactId = RXJAVA2_ARTIFACT_ID
+  publishVersion = RXJAVA2_VERSION_NAME
+  desc = "Backoff algorithm with RxJava2"
+  website = WEBSITE
+}

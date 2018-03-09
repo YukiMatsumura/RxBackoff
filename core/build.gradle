@@ -1,0 +1,47 @@
+apply plugin: 'com.android.library'
+apply from: '../jacoco.gradle'
+apply plugin: 'com.novoda.bintray-release'
+
+android {
+  compileSdkVersion COMPILE_SDK_VERSION as int
+
+  defaultConfig {
+    minSdkVersion MIN_SDK_VERSION
+    targetSdkVersion TARGET_SDK_VERSION
+    versionCode CORE_VERSION_CODE as int
+    versionName CORE_VERSION_NAME
+
+    testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+  }
+
+  buildTypes {
+    debug {
+      testCoverageEnabled true
+    }
+  }
+
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_1_7
+    targetCompatibility JavaVersion.VERSION_1_7
+  }
+}
+
+dependencies {
+  implementation "com.android.support:support-annotations:${SUPPORT_LIB}"
+  testImplementation "junit:junit:${JUNIT}"
+  testImplementation "org.assertj:assertj-core:${ASSERTJ_CORE}"
+  testImplementation "org.mockito:mockito-core:${MOCKITO_CORE}"
+}
+
+// Publish Bintray:
+//   Push git tag "core_vX.Y.Z". And Then CircleCI will publish it to Bintray.
+// or Manually...
+//   ./gradlew clean :core:build :core:bintrayUpload -PbintrayUser=[bintrayUser] -PbintrayKey=[bintrayKey] -PdryRun=false
+publish {
+  userOrg = USER_ORG
+  groupId = GROUP_ID
+  artifactId = CORE_ARTIFACT_ID
+  publishVersion = CORE_VERSION_NAME
+  desc = "Backoff algorithm"
+  website = WEBSITE
+}

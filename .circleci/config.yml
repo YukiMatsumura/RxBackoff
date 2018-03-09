@@ -12,28 +12,40 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: jars-{{ checksum "build.gradle" }}-{{ checksum  "library/build.gradle" }}-{{ checksum  "example/build.gradle" }}
+          key: jars-{{ checksum "build.gradle" }}-{{ checksum  "core/build.gradle" }}-{{ checksum  "rxjava2/build.gradle" }}-{{ checksum  "example/build.gradle" }}
       - run:
           name: Download Dependencies
           command: ./gradlew androidDependencies
       - save_cache:
           paths: ~/.gradle
-          key: jars-{{ checksum "build.gradle" }}-{{ checksum  "library/build.gradle" }}-{{ checksum  "example/build.gradle" }}
+          key: jars-{{ checksum "build.gradle" }}-{{ checksum  "core/build.gradle" }}-{{ checksum  "rxjava2/build.gradle" }}-{{ checksum  "example/build.gradle" }}
       - run:
-          name: Run Assemble
-          command: ./gradlew :library:assembleRelease
+          name: Run Core Assemble
+          command: ./gradlew :core:assembleRelease
       - run:
-          name: Run Test Coverage
-          command: ./gradlew :library:testDebugUnitTestCoverage
+          name: Run RxJava2 Assemble
+          command: ./gradlew :rxjava2:assembleRelease
+      - run:
+          name: Run Core Test Coverage
+          command: ./gradlew :core:testDebugUnitTestCoverage
+      - run:
+          name: Run RxJava2 Test Coverage
+          command: ./gradlew :rxjava2:testDebugUnitTestCoverage
       - run:
           name: Run Example test
           command: ./gradlew :example:test
       - store_artifacts:
-          path: ./library/build/outputs/
-          destination: outputs
+          path: ./core/build/outputs/
+          destination: outputs/core/
       - store_artifacts:
-          path: ./library/build/reports/
-          destination: reports
+          path: ./core/build/reports/
+          destination: reports/core/
+      - store_artifacts:
+          path: ./rxjava2/build/outputs/
+          destination: outputs/rxjava2/
+      - store_artifacts:
+          path: ./rxjava2/build/reports/
+          destination: reports/rxjava2/
       - run:
           name: Codecov
           command: bash <(curl -s https://codecov.io/bash)
@@ -41,14 +53,22 @@ jobs:
           root: .
           paths:
             - .
-  deploy:
+  deploy_core:
     <<: *defaults
     steps:
       - attach_workspace:
           at: .
       - run:
           name: Deploy
-          command: ./gradlew :library:bintrayUpload -PbintrayUser=$BINTRAY_USER -PbintrayKey=$BINTRAY_KEY -PdryRun=false
+          command: ./gradlew :core:bintrayUpload -PbintrayUser=$BINTRAY_USER -PbintrayKey=$BINTRAY_KEY -PdryRun=false
+  deploy_rxjava2:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: Deploy
+          command: ./gradlew :rxjava2:bintrayUpload -PbintrayUser=$BINTRAY_USER -PbintrayKey=$BINTRAY_KEY -PdryRun=false
 
 workflows:
   version: 2
@@ -58,11 +78,19 @@ workflows:
           filters:
             tags:
               only: /.*/
-      - deploy:
+      - deploy_core:
           requires:
             - build
           filters:
             tags:
-              only: /^v.*/
+              only: /^core_v.*/
+            branches:
+              ignore: /.*/
+      - deploy_rxjava2:
+          requires:
+            - build
+          filters:
+            tags:
+              only: /^rxjava2_v.*/
             branches:
               ignore: /.*/
