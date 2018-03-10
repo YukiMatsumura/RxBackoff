@@ -30,10 +30,14 @@ android {
 dependencies {
   api project(':core')
   implementation "com.android.support:support-annotations:${SUPPORT_LIB}"
+  implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
   testImplementation "junit:junit:${JUNIT}"
   testImplementation "org.assertj:assertj-core:${ASSERTJ_CORE}"
   testImplementation "org.mockito:mockito-core:${MOCKITO_CORE}"
-  compile "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+}
+
+tasks.withType(Javadoc).all {
+  enabled = false
 }
 
 // Publish Bintray:
