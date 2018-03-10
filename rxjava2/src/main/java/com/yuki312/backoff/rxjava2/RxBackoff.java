@@ -135,53 +135,49 @@ public class RxBackoff {
     return this;
   }
 
-  public ObservableApplier observable() {
-    return new ObservableApplier();
+  public Function<Observable<Throwable>, ObservableSource<?>> observable() {
+    return new Function<Observable<Throwable>, ObservableSource<?>>() {
+      @Override public ObservableSource apply(Observable<Throwable> attempts) throws Exception {
+        return attempts.flatMap(new Function<Throwable, ObservableSource<?>>() {
+          @Override public ObservableSource<?> apply(Throwable throwable) throws Exception {
+            if (!filter.test(throwable)) {
+              return Observable.error(throwable);
+            }
+
+            long interval = backoff.interval();
+            if (interval != Backoff.ABORT) {
+              onRetry.accept(throwable, backoff.getRetryCount());
+              return Observable.timer(interval, TimeUnit.MILLISECONDS, intervalScheduler);
+            } else {
+              onAbort.accept(throwable);
+              return Observable.error(throwable);
+            }
+          }
+        });
+      }
+    };
   }
 
-  public FlowableApplier flowable() {
-    return new FlowableApplier();
-  }
+  public Function<Flowable<Throwable>, Publisher<?>> flowable() {
+    return new Function<Flowable<Throwable>, Publisher<?>>() {
+      @Override public Publisher<?> apply(Flowable<Throwable> attempts) throws Exception {
+        return attempts.flatMap(new Function<Throwable, Publisher<?>>() {
+          @Override public Publisher<?> apply(Throwable throwable) throws Exception {
+            if (!filter.test(throwable)) {
+              return Flowable.error(throwable);
+            }
 
-  public class ObservableApplier implements Function<Observable<Throwable>, ObservableSource<?>> {
-    @Override public ObservableSource apply(Observable<Throwable> attempts) throws Exception {
-      return attempts.flatMap(new Function<Throwable, ObservableSource<?>>() {
-        @Override public ObservableSource<?> apply(Throwable throwable) throws Exception {
-          if (!filter.test(throwable)) {
-            return Observable.error(throwable);
+            long interval = backoff.interval();
+            if (interval != Backoff.ABORT) {
+              onRetry.accept(throwable, backoff.getRetryCount());
+              return Flowable.timer(interval, TimeUnit.MILLISECONDS, intervalScheduler);
+            } else {
+              onAbort.accept(throwable);
+              return Flowable.error(throwable);
+            }
           }
-
-          long interval = backoff.interval();
-          if (interval != Backoff.ABORT) {
-            onRetry.accept(throwable, backoff.getRetryCount());
-            return Observable.timer(interval, TimeUnit.MILLISECONDS, intervalScheduler);
-          } else {
-            onAbort.accept(throwable);
-            return Observable.error(throwable);
-          }
-        }
-      });
-    }
-  }
-
-  public class FlowableApplier implements Function<Flowable<Throwable>, Publisher<?>> {
-    @Override public Publisher<?> apply(Flowable<Throwable> attempts) throws Exception {
-      return attempts.flatMap(new Function<Throwable, Publisher<?>>() {
-        @Override public Publisher<?> apply(Throwable throwable) throws Exception {
-          if (!filter.test(throwable)) {
-            return Flowable.error(throwable);
-          }
-
-          long interval = backoff.interval();
-          if (interval != Backoff.ABORT) {
-            onRetry.accept(throwable, backoff.getRetryCount());
-            return Flowable.timer(interval, TimeUnit.MILLISECONDS, intervalScheduler);
-          } else {
-            onAbort.accept(throwable);
-            return Flowable.error(throwable);
-          }
-        }
-      });
-    }
+        });
+      }
+    };
   }
 }
