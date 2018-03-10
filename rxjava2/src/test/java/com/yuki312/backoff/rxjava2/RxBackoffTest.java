@@ -34,7 +34,7 @@ public class RxBackoffTest {
             throw new Exception("error " + count.incrementAndGet());
           }
         })
-        .retryWhen(backoff)
+        .retryWhen(backoff.observable())
         .subscribeOn(scheduler)
         .test();
 
@@ -65,7 +65,7 @@ public class RxBackoffTest {
             throw new Exception("error " + count.incrementAndGet());
           }
         })
-        .retryWhen(backoff)
+        .retryWhen(backoff.observable())
         .subscribeOn(scheduler)
         .test();
 

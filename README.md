@@ -8,15 +8,17 @@ This library is useful when you want a retry operation using **Exponential backo
 In a variety of computer networks, binary exponential backoff or truncated binary exponential backoff refers to an algorithm used to space out repeated retransmissions of the same block of data, often as part of network congestion avoidance.
 
 
-### Usage
+## Usage
 
-Library core package: [![Download](https://api.bintray.com/packages/yuki312/maven/backoff-core/images/download.svg)](https://bintray.com/yuki312/maven/backoff-core/_latestVersion)
+Library core package:
+[![Download](https://api.bintray.com/packages/yuki312/maven/backoff-core/images/download.svg)](https://bintray.com/yuki312/maven/backoff-core/_latestVersion)
 
 ```gradle
 implementation 'com.yuki312:backoff-core:<latest version>'
 ```
 
-If you want to use RxJava2, add the following package: [![Download](https://api.bintray.com/packages/yuki312/maven/backoff-rxjava2/images/download.svg)](https://bintray.com/yuki312/maven/backoff-rxjava2/_latestVersion)
+If you want to implement a backoff interval with retryWhen of RxJava 2, use the following package:
+[![Download](https://api.bintray.com/packages/yuki312/maven/backoff-rxjava2/images/download.svg)](https://bintray.com/yuki312/maven/backoff-rxjava2/_latestVersion)
 
 ```gradle
 implementation 'com.yuki312:backoff-rxjava2:<latest version>'
@@ -29,7 +31,7 @@ The following code delays the retry process with the Binary Exponential Backoff 
 ```java
 // retry -> (wait 0.5s) -> retry -> (wait 1s) -> retry -> (wait 2s) -> ...
 retrofit.webapi()
-    .retryWhen(RxBackoff.exponential(2.0 /* Multiplier */ , 5 /* maxRetryCount */))
+    .retryWhen(RxBackoff.exponential(2.0 /* Multiplier */ , 5 /* maxRetryCount */).observable())
     .subscribe(...)
 ```
 
@@ -38,7 +40,7 @@ The following code is a random interval algorithm(not backoff).
 ```java
 // retry -> (wait 1~5000ms) -> retry -> (wait 1~5000ms) -> retry ...
 retrofit.webapi()
-    .retryWhen(RxBackoff.random(1 /* low */, 5000 /* high */, 5 /* maxRetryCount */))
+    .retryWhen(RxBackoff.random(1 /* low */, 5000 /* high */, 5 /* maxRetryCount */).observable())
     .subscribe(...)
 ```
 
@@ -214,10 +216,11 @@ public Builder setMaxElapsedTime(long elapsedTime, TimeUnit unit)
 ```java
 retrofit.webapi()
   .retryWhen(
-      RxBackoff.exponential(maxRetryCount = 5))
+      RxBackoff.exponential(maxRetryCount = 5)
           .filter { it is HttpException } // You can filtered 500 or 504 here
           .doOnRetry { e, cnt -> println("Retry $cnt times, error=$e") }
-          .doOnAbort { e -> println("Abort, error=$e") })
+          .doOnAbort { e -> println("Abort, error=$e") }
+          .observable())
 ```
 
 
