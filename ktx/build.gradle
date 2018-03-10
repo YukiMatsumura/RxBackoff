@@ -1,0 +1,53 @@
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+apply from: '../jacoco.gradle'
+apply plugin: 'com.novoda.bintray-release'
+
+android {
+  compileSdkVersion COMPILE_SDK_VERSION as int
+
+  defaultConfig {
+    minSdkVersion MIN_SDK_VERSION
+    targetSdkVersion TARGET_SDK_VERSION
+    versionCode KTX_VERSION_CODE as int
+    versionName KTX_VERSION_NAME
+
+    testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+  }
+
+  buildTypes {
+    debug {
+      testCoverageEnabled true
+    }
+  }
+
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_1_7
+    targetCompatibility JavaVersion.VERSION_1_7
+  }
+}
+
+dependencies {
+  api project(':core')
+  implementation "com.android.support:support-annotations:${SUPPORT_LIB}"
+  testImplementation "junit:junit:${JUNIT}"
+  testImplementation "org.assertj:assertj-core:${ASSERTJ_CORE}"
+  testImplementation "org.mockito:mockito-core:${MOCKITO_CORE}"
+  compile "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+}
+
+// Publish Bintray:
+//   Push git tag "ktx_vX.Y.Z". And Then CircleCI will publish it to Bintray.
+// or Manually...
+//   ./gradlew clean :ktx:build :ktx:bintrayUpload -PbintrayUser=[bintrayUser] -PbintrayKey=[bintrayKey] -PdryRun=false
+publish {
+  userOrg = USER_ORG
+  groupId = GROUP_ID
+  artifactId = KTX_ARTIFACT_ID
+  publishVersion = KTX_VERSION_NAME
+  desc = "Backoff algorithm kotlin extension"
+  website = WEBSITE
+}
+repositories {
+  mavenCentral()
+}
