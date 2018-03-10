@@ -6,6 +6,7 @@ import com.yuki312.backoff.core.BackoffAlgorithm;
 import com.yuki312.backoff.core.ExponentialAlgorithm;
 import com.yuki312.backoff.core.FixedIntervalAlgorithm;
 import com.yuki312.backoff.core.RandomIntervalAlgorithm;
+import io.reactivex.Flowable;
 import io.reactivex.Observable;
 import io.reactivex.ObservableSource;
 import io.reactivex.Scheduler;
@@ -15,8 +16,9 @@ import io.reactivex.functions.Function;
 import io.reactivex.functions.Predicate;
 import io.reactivex.schedulers.Schedulers;
 import java.util.concurrent.TimeUnit;
+import org.reactivestreams.Publisher;
 
-public class RxBackoff implements Function<Observable<Throwable>, ObservableSource<?>> {
+public class RxBackoff {
 
   @NonNull private final Backoff backoff;
   @NonNull private final Scheduler intervalScheduler;
@@ -98,25 +100,6 @@ public class RxBackoff implements Function<Observable<Throwable>, ObservableSour
     this.intervalScheduler = intervalScheduler;
   }
 
-  @Override public ObservableSource apply(Observable<Throwable> attempts) throws Exception {
-    return attempts.flatMap(new Function<Throwable, ObservableSource<?>>() {
-      @Override public ObservableSource<?> apply(Throwable throwable) throws Exception {
-        if (!filter.test(throwable)) {
-          return Observable.error(throwable);
-        }
-
-        long interval = backoff.interval();
-        if (interval != Backoff.ABORT) {
-          onRetry.accept(throwable, backoff.getRetryCount());
-          return Observable.timer(interval, TimeUnit.MILLISECONDS, intervalScheduler);
-        } else {
-          onAbort.accept(throwable);
-          return Observable.error(throwable);
-        }
-      }
-    });
-  }
-
   /**
    * Filters errors emitted by an ObservableSource by only emitting those that satisfy a specified
    * predicate.
@@ -150,5 +133,55 @@ public class RxBackoff implements Function<Observable<Throwable>, ObservableSour
   public RxBackoff doOnAbort(@NonNull Consumer<Throwable> onAbort) {
     this.onAbort = onAbort;
     return this;
+  }
+
+  public ObservableApplier observable() {
+    return new ObservableApplier();
+  }
+
+  public FlowableApplier flowable() {
+    return new FlowableApplier();
+  }
+
+  public class ObservableApplier implements Function<Observable<Throwable>, ObservableSource<?>> {
+    @Override public ObservableSource apply(Observable<Throwable> attempts) throws Exception {
+      return attempts.flatMap(new Function<Throwable, ObservableSource<?>>() {
+        @Override public ObservableSource<?> apply(Throwable throwable) throws Exception {
+          if (!filter.test(throwable)) {
+            return Observable.error(throwable);
+          }
+
+          long interval = backoff.interval();
+          if (interval != Backoff.ABORT) {
+            onRetry.accept(throwable, backoff.getRetryCount());
+            return Observable.timer(interval, TimeUnit.MILLISECONDS, intervalScheduler);
+          } else {
+            onAbort.accept(throwable);
+            return Observable.error(throwable);
+          }
+        }
+      });
+    }
+  }
+
+  public class FlowableApplier implements Function<Flowable<Throwable>, Publisher<?>> {
+    @Override public Publisher<?> apply(Flowable<Throwable> attempts) throws Exception {
+      return attempts.flatMap(new Function<Throwable, Publisher<?>>() {
+        @Override public Publisher<?> apply(Throwable throwable) throws Exception {
+          if (!filter.test(throwable)) {
+            return Flowable.error(throwable);
+          }
+
+          long interval = backoff.interval();
+          if (interval != Backoff.ABORT) {
+            onRetry.accept(throwable, backoff.getRetryCount());
+            return Flowable.timer(interval, TimeUnit.MILLISECONDS, intervalScheduler);
+          } else {
+            onAbort.accept(throwable);
+            return Flowable.error(throwable);
+          }
+        }
+      });
+    }
   }
 }

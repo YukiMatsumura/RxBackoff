@@ -31,7 +31,7 @@ The following code delays the retry process with the Binary Exponential Backoff 
 ```java
 // retry -> (wait 0.5s) -> retry -> (wait 1s) -> retry -> (wait 2s) -> ...
 retrofit.webapi()
-    .retryWhen(RxBackoff.exponential(2.0 /* Multiplier */ , 5 /* maxRetryCount */))
+    .retryWhen(RxBackoff.exponential(2.0 /* Multiplier */ , 5 /* maxRetryCount */).observable())
     .subscribe(...)
 ```
 
@@ -40,7 +40,7 @@ The following code is a random interval algorithm(not backoff).
 ```java
 // retry -> (wait 1~5000ms) -> retry -> (wait 1~5000ms) -> retry ...
 retrofit.webapi()
-    .retryWhen(RxBackoff.random(1 /* low */, 5000 /* high */, 5 /* maxRetryCount */))
+    .retryWhen(RxBackoff.random(1 /* low */, 5000 /* high */, 5 /* maxRetryCount */).observable())
     .subscribe(...)
 ```
 
@@ -216,10 +216,11 @@ public Builder setMaxElapsedTime(long elapsedTime, TimeUnit unit)
 ```java
 retrofit.webapi()
   .retryWhen(
-      RxBackoff.exponential(maxRetryCount = 5))
+      RxBackoff.exponential(maxRetryCount = 5)
           .filter { it is HttpException } // You can filtered 500 or 504 here
           .doOnRetry { e, cnt -> println("Retry $cnt times, error=$e") }
-          .doOnAbort { e -> println("Abort, error=$e") })
+          .doOnAbort { e -> println("Abort, error=$e") }
+          .observable())
 ```
 
 
