@@ -1,1 +1,1 @@
-include ':example', ':core', ':rxjava2'
+include ':example', ':core', ':rxjava2', ':ktx'
