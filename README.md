@@ -8,15 +8,17 @@ This library is useful when you want a retry operation using **Exponential backo
 In a variety of computer networks, binary exponential backoff or truncated binary exponential backoff refers to an algorithm used to space out repeated retransmissions of the same block of data, often as part of network congestion avoidance.
 
 
-### Usage
+## Usage
 
-Library core package: [![Download](https://api.bintray.com/packages/yuki312/maven/backoff-core/images/download.svg)](https://bintray.com/yuki312/maven/backoff-core/_latestVersion)
+Library core package:
+[![Download](https://api.bintray.com/packages/yuki312/maven/backoff-core/images/download.svg)](https://bintray.com/yuki312/maven/backoff-core/_latestVersion)
 
 ```gradle
 implementation 'com.yuki312:backoff-core:<latest version>'
 ```
 
-If you want to use RxJava2, add the following package: [![Download](https://api.bintray.com/packages/yuki312/maven/backoff-rxjava2/images/download.svg)](https://bintray.com/yuki312/maven/backoff-rxjava2/_latestVersion)
+If you want to implement a backoff interval with retryWhen of RxJava 2, use the following package:
+[![Download](https://api.bintray.com/packages/yuki312/maven/backoff-rxjava2/images/download.svg)](https://bintray.com/yuki312/maven/backoff-rxjava2/_latestVersion)
 
 ```gradle
 implementation 'com.yuki312:backoff-rxjava2:<latest version>'
