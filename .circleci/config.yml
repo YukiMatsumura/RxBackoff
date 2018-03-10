@@ -12,13 +12,13 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: jars-{{ checksum "build.gradle" }}-{{ checksum  "core/build.gradle" }}-{{ checksum  "rxjava2/build.gradle" }}-{{ checksum  "example/build.gradle" }}
+          key: jars-{{ checksum "build.gradle" }}-{{ checksum  "core/build.gradle" }}-{{ checksum  "rxjava2/build.gradle" }}-{{ checksum  "ktx/build.gradle" }}-{{ checksum  "example/build.gradle" }}
       - run:
           name: Download Dependencies
           command: ./gradlew androidDependencies
       - save_cache:
           paths: ~/.gradle
-          key: jars-{{ checksum "build.gradle" }}-{{ checksum  "core/build.gradle" }}-{{ checksum  "rxjava2/build.gradle" }}-{{ checksum  "example/build.gradle" }}
+          key: jars-{{ checksum "build.gradle" }}-{{ checksum  "core/build.gradle" }}-{{ checksum  "rxjava2/build.gradle" }}-{{ checksum  "ktx/build.gradle" }}-{{ checksum  "example/build.gradle" }}
       - run:
           name: Run Core Assemble
           command: ./gradlew :core:assembleRelease
@@ -26,11 +26,17 @@ jobs:
           name: Run RxJava2 Assemble
           command: ./gradlew :rxjava2:assembleRelease
       - run:
+          name: Run KTX Assemble
+          command: ./gradlew :ktx:assembleRelease
+      - run:
           name: Run Core Test Coverage
           command: ./gradlew :core:testDebugUnitTestCoverage
       - run:
           name: Run RxJava2 Test Coverage
           command: ./gradlew :rxjava2:testDebugUnitTestCoverage
+      - run:
+          name: Run KTX Test Coverage
+          command: ./gradlew :ktx:testDebugUnitTestCoverage
       - run:
           name: Run Example test
           command: ./gradlew :example:test
@@ -46,6 +52,12 @@ jobs:
       - store_artifacts:
           path: ./rxjava2/build/reports/
           destination: reports/rxjava2/
+      - store_artifacts:
+          path: ./ktx/build/outputs/
+          destination: outputs/ktx/
+      - store_artifacts:
+          path: ./ktx/build/reports/
+          destination: reports/ktx/
       - run:
           name: Codecov
           command: bash <(curl -s https://codecov.io/bash)
@@ -69,6 +81,14 @@ jobs:
       - run:
           name: Deploy
           command: ./gradlew :rxjava2:bintrayUpload -PbintrayUser=$BINTRAY_USER -PbintrayKey=$BINTRAY_KEY -PdryRun=false
+  deploy_ktx:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: Deploy
+          command: ./gradlew :ktx:bintrayUpload -PbintrayUser=$BINTRAY_USER -PbintrayKey=$BINTRAY_KEY -PdryRun=false
 
 workflows:
   version: 2
@@ -92,5 +112,13 @@ workflows:
           filters:
             tags:
               only: /^rxjava2_v.*/
+            branches:
+              ignore: /.*/
+      - deploy_ktx:
+          requires:
+            - build
+          filters:
+            tags:
+              only: /^ktx_v.*/
             branches:
               ignore: /.*/
