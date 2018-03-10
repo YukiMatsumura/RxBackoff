@@ -29,6 +29,7 @@ dependencies {
   androidTestImplementation 'com.android.support.test:runner:1.0.1'
   androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
 
-  implementation project(':core')
+  implementation "com.yuki312:backoff-core:0.0.3"
+  implementation "com.yuki312:backoff-rxjava2:0.0.3"
   implementation "io.reactivex.rxjava2:rxjava:2.1.10"
 }
